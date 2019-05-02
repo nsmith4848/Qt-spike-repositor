@@ -3,11 +3,11 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout,QLabel
 
 # inicializes the application, you only need 1 per app.
- app = QApplication([])
+app = QApplication([])
 # makes a window for the application.
- window = QWidget()
+window = QWidget()
 # tells python we want to use the Vbox layout for our controls.
- layout = QVBoxLayout()
+layout = QVBoxLayout()
 # adds a button. 
 layout.addWidget(QPushButton('this button should be accessible'))
 # adds a label. 
@@ -17,5 +17,5 @@ window.setLayout(layout)
 # shows the window on screen.
 window.show()
 # closes the app.
- app.exec_()
+app.exec_()
 

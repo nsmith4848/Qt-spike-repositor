@@ -34,9 +34,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.12
-import QtQuick.Controls.Material 2.12
-import QtQuick.Controls.Material.impl 2.12
+import QtQuick 2.9
+import QtQuick.Controls.Material 2.2
+import QtQuick.Controls.Material.impl 2.2
 
 Item {
     id: root
@@ -48,6 +48,7 @@ Item {
     property bool handlePressed: false
     property bool handleHovered: false
     readonly property int initialSize: 13
+    readonly property bool horizontal: control.orientation === Qt.Horizontal
     readonly property var control: parent
 
     Rectangle {

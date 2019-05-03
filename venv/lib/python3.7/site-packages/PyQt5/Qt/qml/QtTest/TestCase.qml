@@ -38,15 +38,14 @@
 ****************************************************************************/
 
 import QtQuick 2.0
-import QtQuick.Window 2.0 // used for qtest_verifyItem
-import QtTest 1.2
+import QtTest 1.1
 import "testlogger.js" as TestLogger
 import Qt.test.qtestroot 1.0
 
 /*!
     \qmltype TestCase
     \inqmlmodule QtTest
-    \brief Represents a unit test case.
+    \brief Represents a unit test case
     \since 4.8
     \ingroup qtquicktest
 
@@ -57,7 +56,7 @@ import Qt.test.qtestroot 1.0
 
     \code
     import QtQuick 2.0
-    import QtTest 1.2
+    import QtTest 1.0
 
     TestCase {
         name: "MathTests"
@@ -108,7 +107,7 @@ import Qt.test.qtestroot 1.0
 
     \code
     import QtQuick 2.0
-    import QtTest 1.2
+    import QtTest 1.1
 
     TestCase {
         name: "DataTests"
@@ -260,7 +259,7 @@ import Qt.test.qtestroot 1.0
     For objects that are created via the \l {Component::}{createObject()} function
     of \l Component, the \l createTemporaryObject() function can be used.
 
-    \sa {QtTest::SignalSpy}{SignalSpy}, {Qt Quick Test}
+    \sa {QtTest::SignalSpy}{SignalSpy}, {Qt Quick Test Reference Documentation}
 */
 
 
@@ -444,9 +443,6 @@ Item {
         or \c{QVERIFY2(condition, message)} in C++.
     */
     function verify(cond, msg) {
-        if (arguments.length > 2)
-            qtest_fail("More than two arguments given to verify(). Did you mean tryVerify() or tryCompare()?", 1)
-
         if (msg === undefined)
             msg = "";
         if (!qtest_results.verify(cond, msg, util.callerFile(), util.callerLine()))
@@ -841,14 +837,7 @@ Item {
 
         Returns a snapshot image object of the given \a item.
 
-        The returned image object has the following properties:
-        \list
-        \li width Returns the width of the underlying image (since 5.10)
-        \li height Returns the height of the underlying image (since 5.10)
-        \li size Returns the size of the underlying image (since 5.10)
-        \endlist
-
-        Additionally, the returned image object has the following methods:
+        The returned image object has the following methods:
         \list
         \li red(x, y) Returns the red channel value of the pixel at \a x, \a y position
         \li green(x, y) Returns the green channel value of the pixel at \a x, \a y position
@@ -868,21 +857,6 @@ Item {
         rect.width += 10;
         var newImage = grabImage(rect);
         verify(!newImage.equals(image));
-        \endcode
-        \li save(path) Saves the image to the given \a path. If the image cannot
-        be saved, an exception will be thrown. (since 5.10)
-
-        This can be useful to perform postmortem analysis on failing tests, for
-        example:
-
-        \code
-        var image = grabImage(rect);
-        try {
-            compare(image.width, 100);
-        } catch (ex) {
-            image.save("debug.png");
-            throw ex;
-        }
         \endcode
 
         \endlist
@@ -1084,24 +1058,6 @@ Item {
         does not occur, then the test will fail.  Similar to
         \c{QTest::ignoreMessage(QtWarningMsg, message)} in C++.
 
-        Since Qt 5.12, \a message can be either a string, or a regular
-        expression providing a pattern of messages to ignore.
-
-        For example, the following snippet will ignore a string warning message:
-        \qml
-        ignoreWarning("Something sort of bad happened")
-        \endqml
-
-        And the following snippet will ignore a regular expression matching a
-        number of possible warning messages:
-        \qml
-        ignoreWarning(new RegExp("[0-9]+ bad things happened"))
-        \endqml
-
-        \note Despite being a JavaScript RegExp object, it will not be
-        interpreted as such; instead, the pattern will be passed to
-        \l QRegularExpression.
-
         \sa warn()
     */
     function ignoreWarning(msg) {
@@ -1133,8 +1089,8 @@ Item {
     function waitForRendering(item, timeout) {
         if (timeout === undefined)
             timeout = 5000
-        if (!qtest_verifyItem(item, "waitForRendering"))
-            return
+        if (!item)
+            qtest_fail("No item given to waitForRendering", 1)
         return qtest_results.waitForRendering(item, timeout)
     }
 
@@ -1230,26 +1186,6 @@ Item {
     }
 
     /*!
-        \since 5.10
-        \qmlmethod TestCase::keySequence(keySequence)
-
-        Simulates typing of \a keySequence. The key sequence can be set
-        to one of the \l{QKeySequence::StandardKey}{standard keyboard shortcuts}, or
-        it can be described with a string containing a sequence of up to four key
-        presses.
-
-        Each event shall be sent to the TestCase window or, in case of multiple windows,
-        to the current active window. See \l QGuiApplication::focusWindow() for more details.
-
-        \sa keyPress(), keyRelease(), {GNU Emacs Style Key Sequences},
-        {QtQuick::Shortcut::sequence}{Shortcut.sequence}
-    */
-    function keySequence(keySequence) {
-        if (!qtest_events.keySequence(keySequence))
-            qtest_fail("window not shown", 2)
-    }
-
-    /*!
         \qmlmethod TestCase::mousePress(item, x = item.width / 2, y = item.height / 2, button = Qt.LeftButton, modifiers = Qt.NoModifier, delay = -1)
 
         Simulates pressing a mouse \a button with an optional \a modifier
@@ -1266,8 +1202,8 @@ Item {
         \sa mouseRelease(), mouseClick(), mouseDoubleClick(), mouseDoubleClickSequence(), mouseMove(), mouseDrag(), mouseWheel()
     */
     function mousePress(item, x, y, button, modifiers, delay) {
-        if (!qtest_verifyItem(item, "mousePress"))
-            return
+        if (!item)
+            qtest_fail("No item given to mousePress", 1)
 
         if (button === undefined)
             button = Qt.LeftButton
@@ -1300,8 +1236,8 @@ Item {
         \sa mousePress(), mouseClick(), mouseDoubleClick(), mouseDoubleClickSequence(), mouseMove(), mouseDrag(), mouseWheel()
     */
     function mouseRelease(item, x, y, button, modifiers, delay) {
-        if (!qtest_verifyItem(item, "mouseRelease"))
-            return
+        if (!item)
+            qtest_fail("No item given to mouseRelease", 1)
 
         if (button === undefined)
             button = Qt.LeftButton
@@ -1330,11 +1266,14 @@ Item {
         If \a item is obscured by another item, or a child of \a item occupies
         that position, then the event will be delivered to the other item instead.
 
+        Note: this method does not imply a drop action, to make a drop, an additional
+        mouseRelease(item, x + dx, y + dy) is needed.
+
         \sa mousePress(), mouseClick(), mouseDoubleClick(), mouseDoubleClickSequence(), mouseMove(), mouseRelease(), mouseWheel()
     */
     function mouseDrag(item, x, y, dx, dy, button, modifiers, delay) {
-        if (!qtest_verifyItem(item, "mouseDrag"))
-            return
+        if (!item)
+            qtest_fail("No item given to mouseDrag", 1)
 
         if (item.x === undefined || item.y === undefined)
             return
@@ -1384,8 +1323,8 @@ Item {
         \sa mousePress(), mouseRelease(), mouseDoubleClick(), mouseDoubleClickSequence(), mouseMove(), mouseDrag(), mouseWheel()
     */
     function mouseClick(item, x, y, button, modifiers, delay) {
-        if (!qtest_verifyItem(item, "mouseClick"))
-            return
+        if (!item)
+            qtest_fail("No item given to mouseClick", 1)
 
         if (button === undefined)
             button = Qt.LeftButton
@@ -1418,8 +1357,8 @@ Item {
         \sa mouseDoubleClickSequence(), mousePress(), mouseRelease(), mouseClick(), mouseMove(), mouseDrag(), mouseWheel()
     */
     function mouseDoubleClick(item, x, y, button, modifiers, delay) {
-        if (!qtest_verifyItem(item, "mouseDoubleClick"))
-            return
+        if (!item)
+            qtest_fail("No item given to mouseDoubleClick", 1)
 
         if (button === undefined)
             button = Qt.LeftButton
@@ -1459,8 +1398,8 @@ Item {
         \sa mouseDoubleClick(), mousePress(), mouseRelease(), mouseClick(), mouseMove(), mouseDrag(), mouseWheel()
     */
     function mouseDoubleClickSequence(item, x, y, button, modifiers, delay) {
-        if (!qtest_verifyItem(item, "mouseDoubleClickSequence"))
-            return
+        if (!item)
+            qtest_fail("No item given to mouseDoubleClickSequence", 1)
 
         if (button === undefined)
             button = Qt.LeftButton
@@ -1491,8 +1430,8 @@ Item {
         \sa mousePress(), mouseRelease(), mouseClick(), mouseDoubleClick(), mouseDoubleClickSequence(), mouseDrag(), mouseWheel()
     */
     function mouseMove(item, x, y, delay, buttons) {
-        if (!qtest_verifyItem(item, "mouseMove"))
-            return
+        if (!item)
+            qtest_fail("No item given to mouseMove", 1)
 
         if (delay == undefined)
             delay = -1
@@ -1519,8 +1458,8 @@ Item {
         \sa mousePress(), mouseClick(), mouseDoubleClick(), mouseDoubleClickSequence(), mouseMove(), mouseRelease(), mouseDrag(), QWheelEvent::angleDelta()
     */
     function mouseWheel(item, x, y, xDelta, yDelta, buttons, modifiers, delay) {
-        if (!qtest_verifyItem(item, "mouseWheel"))
-            return
+        if (!item)
+            qtest_fail("No item given to mouseWheel", 1)
 
         if (delay == undefined)
             delay = -1
@@ -1580,8 +1519,8 @@ Item {
     */
 
     function touchEvent(item) {
-        if (!qtest_verifyItem(item, "touchEvent"))
-            return
+        if (!item)
+            qtest_fail("No item given to touchEvent", 1)
 
         return {
             _defaultItem: item,
@@ -1690,23 +1629,6 @@ Item {
     function cleanup() {}
 
     /*! \internal */
-    function qtest_verifyItem(item, method) {
-        try {
-            if (!(item instanceof Item) &&
-                !(item instanceof Window)) {
-                // it's a QObject, but not a type
-                qtest_fail("TypeError: %1 requires an Item or Window type".arg(method), 2);
-                return false;
-            }
-        } catch (e) { // it's not a QObject
-            qtest_fail("TypeError: %1 requires an Item or Window type".arg(method), 3);
-            return false;
-        }
-
-        return true;
-    }
-
-    /*! \internal */
     function qtest_runInternal(prop, arg) {
         try {
             qtest_testCaseResult = testCase[prop](arg)
@@ -1774,6 +1696,11 @@ Item {
 
     /*! \internal */
     function qtest_run() {
+        if (util.printAvailableFunctions) {
+            completed = true
+            return
+        }
+
         if (TestLogger.log_start_test()) {
             qtest_results.reset()
             qtest_results.testCaseName = name
@@ -1784,28 +1711,17 @@ Item {
         running = true
 
         // Check the run list to see if this class is mentioned.
-        let checkNames = false
-        let testsToRun = {} // explicitly provided function names to run and their tags for data-driven tests
-
-        if (qtest_results.functionsToRun.length > 0) {
-            checkNames = true
+        var functionsToRun = qtest_results.functionsToRun
+        if (functionsToRun.length > 0) {
             var found = false
-
+            var list = []
             if (name.length > 0) {
-                for (var index in qtest_results.functionsToRun) {
-                    let caseFuncName = qtest_results.functionsToRun[index]
-                    if (caseFuncName.indexOf(name + "::") != 0)
-                        continue
-
-                    found = true
-                    let funcName = caseFuncName.substring(name.length + 2)
-
-                    if (!(funcName in testsToRun))
-                        testsToRun[funcName] = []
-
-                    let tagName = qtest_results.tagsToRun[index]
-                    if (tagName.length > 0) // empty tags mean run all rows
-                        testsToRun[funcName].push(tagName)
+                var prefix = name + "::"
+                for (var index in functionsToRun) {
+                    if (functionsToRun[index].indexOf(prefix) == 0) {
+                        list.push(functionsToRun[index])
+                        found = true
+                    }
                 }
             }
             if (!found) {
@@ -1817,6 +1733,7 @@ Item {
                 qtest_results.testCaseName = ""
                 return
             }
+            functionsToRun = list
         }
 
         // Run the initTestCase function.
@@ -1841,15 +1758,17 @@ Item {
             }
             testList.sort()
         }
-
+        var checkNames = (functionsToRun.length > 0)
         for (var index in testList) {
             var prop = testList[index]
-
-            if (checkNames && !(prop in testsToRun))
-                continue
-
             var datafunc = prop + "_data"
             var isBenchmark = (prop.indexOf("benchmark_") == 0)
+            if (checkNames) {
+                var index = functionsToRun.indexOf(name + "::" + prop)
+                if (index < 0)
+                    continue
+                functionsToRun.splice(index, 1)
+            }
             qtest_results.functionName = prop
 
             if (!(datafunc in testCase))
@@ -1859,29 +1778,18 @@ Item {
                 if (qtest_runInternal(datafunc)) {
                     var table = qtest_testCaseResult
                     var haveData = false
-
-                    let checkTags = (checkNames && testsToRun[prop].length > 0)
-
                     qtest_results.initTestTable()
                     for (var index in table) {
                         haveData = true
                         var row = table[index]
                         if (!row.tag)
                             row.tag = "row " + index    // Must have something
-                        if (checkTags) {
-                            let tags = testsToRun[prop]
-                            let tagIdx = tags.indexOf(row.tag)
-                            if (tagIdx < 0)
-                                continue
-                            tags.splice(tagIdx, 1)
-                        }
                         qtest_results.dataTag = row.tag
                         if (isBenchmark)
                             qtest_runBenchmarkFunction(prop, row)
                         else
                             qtest_runFunction(prop, row)
                         qtest_results.dataTag = ""
-                        qtest_results.skipped = false
                     }
                     if (!haveData) {
                         if (datafunc === "init_data")
@@ -1899,9 +1807,6 @@ Item {
             }
             qtest_results.finishTestFunction()
             qtest_results.skipped = false
-
-            if (checkNames && testsToRun[prop].length <= 0)
-                delete testsToRun[prop]
         }
 
         // Run the cleanupTestCase function.
@@ -1910,21 +1815,8 @@ Item {
         qtest_runInternal("cleanupTestCase")
 
         // Complain about missing functions that we were supposed to run.
-        if (checkNames) {
-            let missingTests = []
-            for (var func in testsToRun) {
-                let caseFuncName = name + '::' + func
-                let tags = testsToRun[func]
-                if (tags.length <= 0)
-                    missingTests.push(caseFuncName)
-                else
-                    for (var i in tags)
-                        missingTests.push(caseFuncName + ':' + tags[i])
-            }
-            missingTests.sort()
-            if (missingTests.length > 0)
-                qtest_results.fail("Could not find test functions: " + missingTests, "", 0)
-        }
+        if (functionsToRun.length > 0)
+            qtest_results.fail("Could not find functions: " + functionsToRun, "", 0)
 
         // Clean up and exit.
         running = false
@@ -1959,9 +1851,29 @@ Item {
         }
     }
 
+
     Component.onCompleted: {
         QTestRootObject.hasTestCase = true;
         qtest_componentCompleted = true;
+
+        if (util.printAvailableFunctions) {
+            var testList = []
+            for (var prop in testCase) {
+                if (prop.indexOf("test_") != 0 && prop.indexOf("benchmark_") != 0)
+                    continue
+                var tail = prop.lastIndexOf("_data");
+                if (tail != -1 && tail == (prop.length - 5))
+                    continue
+                // Note: cannot run functions in TestCase elements
+                // that lack a name.
+                if (name.length > 0)
+                    testList.push(name + "::" + prop + "()")
+            }
+            testList.sort()
+            for (var index in testList)
+                console.log(testList[index])
+            return
+        }
         qtest_testId = TestLogger.log_register_test(name)
         if (optional)
             TestLogger.log_optional_test(qtest_testId)
